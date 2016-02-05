@@ -1,9 +1,9 @@
 ﻿using System;
-using System.IO;
-using System.Net;
 using System.Json;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
 
 using Xamarin.Forms;
 
@@ -16,29 +16,50 @@ namespace Nokiso
 		{
 			InitializeComponent ();
 			this.Title = "Store page";
-			FetchAsync ("http://appspaces.fr/esgi/jsontest.php");
+
+			GetData ();
 		}
 
-		private void Display(JsonValue value)
+		private async void GetData()
 		{
-			var date = value ["result"] ["date"];
-			Console.WriteLine ("{0}", date);
-			this.LabelDate.Text = date;
-		}
+			// string Method = "POST";
+			string Method = "GET";
+			string Operation = "/store/list";
+			// string Operation = "/oauth/token";
+			string ContentType = "application/x-www-form-urlencoded";
 
-		private async Task<JsonValue> FetchAsync (string url)
-		{
-			HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create (new Uri(url));
-			request.ContentType = "application/json";
-			request.Method = "GET";
-
-			using (WebResponse response = await request.GetResponseAsync ()) 
+			HttpContent Body = new FormUrlEncodedContent(new[]
 			{
-				using (Stream stream = response.GetResponseStream ()) 
-				{
-					JsonValue json = await Task.Run (() => JsonObject.Load (stream));
-					Display (json);
-					return null;
+				new KeyValuePair<string, string>("grant_type", "client_credentials"), 
+				new KeyValuePair<string, string>("client_id", "8a1d8939-7ded-4e0c-9cb1-a27748edad62"), 
+				new KeyValuePair<string, string>("client_secret", "cdf2662153b94b1cef93a7513276256908fe8992"), 
+				new KeyValuePair<string, string>("refresh_token", ""),
+				new KeyValuePair<string, string>("username", ""),
+				new KeyValuePair<string, string>("password", ""),
+				new KeyValuePair<string, string>("code", ""),
+				new KeyValuePair<string, string>("redirect_ui", ""),
+			});
+			
+			string AccessToken = "INSERT_VALID_TOKEN";
+		
+			Service s = new Service (Operation, Method, ContentType, Body, AccessToken);
+			Task<JsonValue> result = s.CallAsync();
+
+			JsonValue data = await result;
+			int responseCode = data ["code"];
+
+			if (data != null) {
+				if (responseCode != 200 && responseCode != 0) {
+					if (responseCode != 401) {
+						Console.WriteLine ("Something went wrong with the request...");
+						this.Result.Text = "Something went wrong with the request...";
+					} else {
+						Console.WriteLine ("Refresh token");
+						this.Result.Text = "Refresh token";
+					}
+				} else {
+					Console.WriteLine ("Result : {0}", data);
+					this.Result.Text = "Check in the logs";
 				}
 			}
 		}
