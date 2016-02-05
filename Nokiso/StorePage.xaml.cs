@@ -12,6 +12,10 @@ namespace Nokiso
 {
 	public partial class StorePage : ContentPage
 	{
+		private Editor pseudo;
+
+		private Editor password;
+
 		public StorePage ()
 		{
 			InitializeComponent ();
@@ -42,6 +46,13 @@ namespace Nokiso
 				}
 			}
 		}
+
+		private void OnClicked (object sender, EventArgs args) {
+//			if () {
+				this.Navigation.PushAsync(new StorePage());
+//			}
+		}
+			
 	}
 }
 

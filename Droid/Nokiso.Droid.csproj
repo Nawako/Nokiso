@@ -70,6 +70,7 @@
     <None Include="Properties\AndroidManifest.xml" />
     <None Include="Assets\AboutAssets.txt" />
     <None Include="packages.config" />
+    <None Include="Resources\onepiecechopper.jpg" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\layout\" />
