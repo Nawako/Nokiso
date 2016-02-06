@@ -40,33 +40,36 @@ namespace Nokiso
 			set;
 		}
 
-		// valid accesstoken
-		public string AccessToken {
+		// will only contain Authorization
+		public Dictionary<string, string> Headers {
 			get;
 			set;
 		}
 
 		// constructor
-		public Service (string operation, string method, string contentType, HttpContent body, string accessToken)
+		public Service (string operation, string method, string contentType, Dictionary<string, string> body, Dictionary<string, string> headers)
 		{
 			Operation = operation;
 			Method = method;
 			ContentType = contentType;
-			Body = body;
-			AccessToken = accessToken;
+			Body = new FormUrlEncodedContent (body);
+			Headers = headers;
 		}
 
 
 		public async Task<JsonValue> CallAsync()
 		{
-			HttpClient request = new HttpClient();
-			request.BaseAddress = new Uri(SERVER_URL);
+			using (HttpClient request = new HttpClient ())
+			{
+				request.BaseAddress = new Uri (SERVER_URL);
 
-			request.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(ContentType));
-			request.DefaultRequestHeaders.Add("Authorization", "Bearer " + AccessToken);
+				request.DefaultRequestHeaders.Accept.Add (new MediaTypeWithQualityHeaderValue (ContentType));
+				foreach (var param in Headers) {
+					request.DefaultRequestHeaders.Add (param.Key, param.Value);	
+				}
 
-			HttpResponseMessage response;
-			switch (Method) {
+				HttpResponseMessage response;
+				switch (Method) {
 				case "GET":
 					response = await request.GetAsync (Operation);
 					break;
@@ -76,26 +79,29 @@ namespace Nokiso
 				case "PUT":
 					response = await request.PutAsync (Operation, Body);
 					break;
+				case "DELETE":
+					response = await request.DeleteAsync (Operation);
+					break;
 				default:
 					response = null;
 					break;
-			}
-	
-			if (response != null) {				
-				using (Stream responseStream = await response.Content.ReadAsStreamAsync ()) {
-					JsonValue data = await Task.Run (() => JsonObject.Load (responseStream));
-					responseStream.Close ();
-
-					return data;
 				}
-			} else {
-				return null;
-			}
+	
+				if (response != null) {				
+					using (Stream responseStream = await response.Content.ReadAsStreamAsync ()) {
+						JsonValue data = await Task.Run (() => JsonObject.Load (responseStream));
+						responseStream.Close ();
 
+						return data;
+					}
+				} else {
+					return null;
+				}
+			}
 		}
 
 
-		private string formatUrl(Dictionary<string, string> CallParams)
+		/* private string formatUrl(Dictionary<string, string> CallParams)
 		{
 			if (CallParams == null)
 				return "";
@@ -107,7 +113,7 @@ namespace Nokiso
 			}
 
 			return "?" + string.Join("&", listParams);
-		}
+		} */
 	}
 }
 

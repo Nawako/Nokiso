@@ -14,6 +14,7 @@
       <DependentUpon>StorePage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Service.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TokenManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)StorePage.xaml">
