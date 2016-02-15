@@ -15,9 +15,6 @@ namespace Nokiso
 	public class Service
 	{
 		private const string SERVER_URL = "http://xmazon.appspaces.fr";
-		private static int callsNumber = 0;
-		private TokenManager TkMgr;
-		private bool firstCall = true;
 
 		// operation that'll be executed on the server
 		public string Operation {
@@ -37,6 +34,12 @@ namespace Nokiso
 			set;
 		}
 
+		// "app" or "user", the token changes accordingly
+		public string Context {
+			get;
+			set;
+		}
+
 		// parameters in the body of the request
 		public Dictionary<string, string> Body {
 			get;
@@ -48,196 +51,246 @@ namespace Nokiso
 			get;
 			set;
 		}
-			
+	
 
 		public Service()
 		{
-			this.Method = "GET";
-			this.ContentType = "application/x-www-form-urlencoded";
-			this.Headers = new Dictionary<string, string> ();
-			this.Body = new Dictionary<string, string> ();
+			Method = "GET"; 
+			ContentType = "application/x-www-form-urlencoded"; 
+			Headers = new Dictionary<string, string> (); 
+			Body = new Dictionary<string, string> (); 
+			Context = "app";
 		}
 
 		// for operation with get method
-		public Service (string operation) : this()
+		public Service (string operation, string context) : this()
 		{
-			this.Operation = operation;
+			Operation = operation;
+			Context = context;
 		}
 			
-		// constructor used when initializing a TokenManager instance
+		// constructor used when initializing a TokenService instance
 		public Service (string operation, string method, Dictionary<string, string> body) : this()
 		{
-			this.Operation = operation;
-			this.Method = method;
-			this.Body = body;
+			Operation = operation;
+			Method = method;
+			Body = body;
 		}
 
 		// for operation with get method, body for specific use of the operation
-		public Service (string operation, Dictionary<string, string> body) : this()
+		public Service (string operation, Dictionary<string, string> body, string context) : this()
 		{
-			this.Operation = operation;
-			this.Body = body;
+			Operation = operation;
+			Context = context;
+			Body = body;
 		}
 
 		// custom call
-		public Service (string operation, string method, string contentType, Dictionary<string, string> headers, Dictionary<string, string> body)
+		public Service (string operation, string method, string contentType, Dictionary<string, string> headers, Dictionary<string, string> body, string context) : this()
 		{
-			this.Operation = operation;
-			this.Method = method;
-			this.ContentType = contentType;
-			this.Body = body;
-			this.Headers = headers;
+			Operation = operation;
+			Method = method;
+			ContentType = contentType;
+			Body = body;
+			Headers = headers;
+			Context = context;
 		}
-			
+
 
 		public async Task<JsonValue> CallAsync()
 		{
-			using (HttpClient request = new HttpClient ())
+			JsonObject error = new JsonObject ();
+
+			using (HttpClient Request = new HttpClient ())
 			{
-				request.DefaultRequestHeaders.Accept.Add (new MediaTypeWithQualityHeaderValue (this.ContentType));
+				Request.DefaultRequestHeaders.Accept.Add (new MediaTypeWithQualityHeaderValue (ContentType));
 
-				// get a token only if the operation is /oauth/token
-				// otherwise we'd get an infinite loop
-				if (firstCall && this.Operation != "/oauth/token") {
-					TkMgr = new TokenManager();
-					Task<JsonValue> resultGetAppToken = TkMgr.GetAppToken ();
-					JsonValue getTokenData = await resultGetAppToken;
-					string accessToken = getTokenData ["access_token"];
-
-					this.Headers.Add("Authorization", "Bearer " + accessToken);
-					this.firstCall = false;
-				}
-					
-				if (this.Headers.Count > 0) {
-					foreach (var param in this.Headers) {
-						request.DefaultRequestHeaders.Add (param.Key, param.Value);	
+				if (Operation != "/oauth/token") {
+					if (Context == "app") {
+						if (!TokenManager.AppHasToken()) {
+							await TokenService.GetAppToken ();
+						} else {
+							Headers.Add ("Authorization", "Bearer " + TokenManager.AppToken);
+						}
+					} else {
+						if (!TokenManager.UserHasToken()) {
+							await TokenService.GetUserToken ();
+						} else {
+							Headers.Add ("Authorization", "Bearer " + TokenManager.UserToken);
+						}
 					}
 				}
 
-				request.BaseAddress = new Uri (SERVER_URL);
-				HttpContent body = new FormUrlEncodedContent (this.Body);
+				if (Headers.Count > 0) {
+					foreach (var HeadersParam in this.Headers) {
+						Request.DefaultRequestHeaders.Add (HeadersParam.Key, HeadersParam.Value);	
+					}
+				}
 
-				HttpResponseMessage response = null;
-				if (this.Method != null && this.Operation != null) {
-					switch (this.Method) {
+				Request.BaseAddress = new Uri (SERVER_URL);
+				HttpContent RequestBody = new FormUrlEncodedContent (Body);
+
+				HttpResponseMessage Response = null;
+				if (Method != null && Operation != null) {
+					switch (Method) {
 					case "GET":
-						response = await request.GetAsync (this.Operation);
+						Response = await Request.GetAsync (Operation);
 						break;
 					case "POST":
-						response = await request.PostAsync (this.Operation, body);
+						Response = await Request.PostAsync (Operation, RequestBody);
 						break;
 					case "PUT":
-						response = await request.PutAsync (this.Operation, body);
+						Response = await Request.PutAsync (Operation, RequestBody);
 						break;
 					case "DELETE":
-						response = await request.DeleteAsync (this.Operation);
+						Response = await Request.DeleteAsync (Operation);
 						break;
 					default:
-						response = null;
+						Response = null;
 						break;
 					}
 				}
 	
-				if (response != null) {
-					using (Stream responseStream = await response.Content.ReadAsStreamAsync ()) {
-						JsonValue data = await Task.Run (() => JsonObject.Load (responseStream));
-						responseStream.Close ();
+				if (Response != null) {
+					using (Stream ResponseStream = await Response.Content.ReadAsStreamAsync ()) {
+						JsonValue ResponseData = await Task.Run (() => JsonObject.Load (ResponseStream));
+						ResponseStream.Close ();
 
 						// if the operation is to get or refresh a token, we can return data
 						// no "code" key in the response of "/oauth/token" operations
-						if (response.IsSuccessStatusCode && this.Operation == "/oauth/token") {
-							return data;
-						}
-						
-						int responseCode = data["code"];
-						if (responseCode != 0) {
-							TkMgr = new TokenManager();
-							Task<JsonValue> resultRefreshAppToken = TkMgr.RefreshAppToken ();
-							JsonValue refreshData = await resultRefreshAppToken;
-
-							if (refreshData != null) {
-								if (!refreshData.ContainsKey("access_token")) {
-									return null;
-								} else {
-									string newToken = refreshData ["access_token"];
-									this.Headers ["Authorization"] = "Bearer " + newToken;
-									await this.CallAsync ();
-								}
+						if (Operation == "/oauth/token") {
+							if (Response.IsSuccessStatusCode) {
+								return ResponseData;
 							} else {
-								return null;
+								error.Add ("erreur", "Something went wrong while retrieving a token.");
 							}
 						}
 
-						return data;
-					}
+						int ResponseCode;
+						if (ResponseData.ContainsKey ("code")) {
+							ResponseCode = ResponseData ["code"];
+						} else {
+							error.Add ("erreur", "Something went wrong while parsing the response data.");
+							return error;
+						}
+
+						if (ResponseCode != 0) {
+							JsonValue RefreshedTokenData;
+							if (Context == "app") {
+								Task<JsonValue> ResultRefreshedToken = TokenService.RefreshAppToken ();
+								RefreshedTokenData = await ResultRefreshedToken;
+							} else {
+								Task<JsonValue> ResultRefreshedToken = TokenService.RefreshUserToken ();
+								RefreshedTokenData = await ResultRefreshedToken;
+							}
+
+							if (RefreshedTokenData != null) {
+								if (!RefreshedTokenData.ContainsKey("access_token")) {
+									error.Add ("erreur", "Something went wrong while parsing the result of the refresh token.");
+									return error;
+								} else {
+									Headers ["Authorization"] = "Bearer " + RefreshedTokenData ["access_token"];
+
+									// re-execute the call but this time the Header has a valid token
+									Task<JsonValue> ResultNewCallAsync = CallAsync ();
+									JsonValue NewCallAsyncData = await ResultNewCallAsync;
+
+									return NewCallAsyncData;
+								}
+							} else {
+								error.Add ("erreur", "Something went wrong while refreshing the token.");
+								return error;
+							}
+						}
+
+						return ResponseData;
+
+					} // </Using stream response>
+				} // </Response != null>
+
+				error.Add ("erreur", "The request did not send back any response");
+				return error;
+			} // </Using HttpClient>
+		}
+
+
+		// set up the requests to get / refresh tokens
+		public class TokenService
+		{
+			private static readonly string Method = "POST";
+			private static readonly string Operation = "/oauth/token";
+			private static string RefreshAppTokenP;
+			private static string RefreshUserTokenP;
+
+			private static Dictionary<string, string> Body = new Dictionary<string, string>();
+			private static Service CallToken = new Service(Operation, Method, Body);
+		
+
+			public static async Task<JsonValue> GetAppToken()
+			{
+				CallToken.Body ["grant_type"] = "client_credentials";
+				CallToken.Body ["client_id"] = "8a1d8939-7ded-4e0c-9cb1-a27748edad62";
+				CallToken.Body ["client_secret"] = "cdf2662153b94b1cef93a7513276256908fe8992";
+
+				Task<JsonValue> Result = CallToken.CallAsync ();
+				JsonValue Data = await Result;
+
+				if (Data.ContainsKey("refresh_token")) {
+					RefreshAppTokenP = Data ["refresh_token"];	
 				}
 
-				return null;
-			}
-		}
-
-		class TokenManager
-		{
-			private Service Service;
-			private const string Method = "POST";
-			private const string Operation = "/oauth/token";
-			private const string ContentType = "application/x-www-form-urlencoded";
-			private string refreshAppToken;
-			private string refreshClientToken;
-
-			// get is public, in case we need to get the grant_type
-			public Dictionary<string,string> Body {
-				get;
-				private set;
+				TokenManager.AppToken = Data ["access_token"];
+				return Data;
 			}
 
-			public TokenManager()
+			public static async Task<JsonValue> RefreshAppToken()
 			{
-				this.Body = new Dictionary<string, string>();
+				CallToken.Body ["grant_type"] = "refresh_token";
+				CallToken.Body ["refresh_token"] = RefreshAppTokenP;
 
-				this.Body.Add("grant_type", "client_credentials");
-				this.Body.Add("client_id", "8a1d8939-7ded-4e0c-9cb1-a27748edad62");
-				this.Body.Add("client_secret", "cdf2662153b94b1cef93a7513276256908fe8992");
-				this.Body.Add("refresh_token", "");
-				this.Body.Add("username", "");
-				this.Body.Add("password", "");
+				Task<JsonValue> Result = CallToken.CallAsync ();
+				JsonValue Data = await Result;
 
-				this.Service = new Service(Operation, Method, Body);
+				if (Data.ContainsKey("refresh_token")) {
+					RefreshAppTokenP = Data ["refresh_token"];
+				}
+					
+				TokenManager.AppToken = Data ["access_token"];
+				return Data;
 			}
 
-			public async Task<JsonValue> GetAppToken()
+			public static async Task<JsonValue> GetUserToken()
 			{
-				this.Body ["grant_type"] = "client_credentials";
-				Task<JsonValue> result = this.Service.CallAsync ();
-				JsonValue data = await result;
-
-				// CallAsync already checked for successful answer
-				this.refreshAppToken = data ["refresh_token"];
-				return data;
-			}
-
-			public async Task<JsonValue> RefreshAppToken()
-			{
-				this.Body ["grant_type"] = "refresh_token";
-				this.Body ["refresh_token"] = refreshAppToken;
-				Task<JsonValue> result = this.Service.CallAsync ();
-				JsonValue data = await result;
-
-				this.refreshAppToken = data ["refresh_token"];
-				return data;
-			}
-
-			// grant_type : password
-			public void GetClientToken()
-			{
+				CallToken.Body ["grant_type"] = "password";
+				CallToken.Body ["username"] = User.Username; 
+				CallToken.Body ["password"] = User.Password;
 				
+				Task<JsonValue> Result = CallToken.CallAsync ();
+				JsonValue Data = await Result;
+
+				if (Data.ContainsKey("refresh_token")) {
+					RefreshUserTokenP = Data ["refresh_token"];
+				}
+
+				TokenManager.UserToken = Data ["access_token"];
+				return Data;
 			}
 
-			// grant_type : refresh_token et mettre le refresh_token correspondant
-			public void RefreshClientToken()
+			public static async Task<JsonValue> RefreshUserToken()
 			{
+				CallToken.Body ["grant_type"] = "refresh_token";
+				CallToken.Body ["refresh_token"] = RefreshUserTokenP;
 				
+				Task<JsonValue> Result = CallToken.CallAsync ();
+				JsonValue Data = await Result;
+
+				if (Data.ContainsKey("refresh_token")) {
+					RefreshUserTokenP = Data ["refresh_token"];
+				}
+
+				TokenManager.UserToken = Data ["access_token"];
+				return Data;
 			}
-		}
-	}
-}
+		} // </class TokenService>
+	} // </class Service>
+} // </Namespace>

@@ -20,7 +20,7 @@ namespace Nokiso
 			GetStore ();
 		}
 			
-		private void UpdateUI(JsonValue data)
+		/* private void UpdateUI(JsonValue data)
 		{
 			int responseCode = data ["code"];
 
@@ -38,15 +38,16 @@ namespace Nokiso
 					this.Result.Text = "Check in the logs";
 				}
 			}
-		}
+		} */
 
 		private async void GetStore()
 		{
-			Service s = new Service ("/store/list");
+			Service s = new Service ("/store/list", "app");
 			Task<JsonValue> result = s.CallAsync();
-
+	
 			JsonValue data = await result;
-			if (data != null) {
+
+			if (!data.ContainsKey("erreur")) {
 				Console.WriteLine ("Result : {0}", data);
 			} else {
 				Console.WriteLine ("Something went wrong with the request");
