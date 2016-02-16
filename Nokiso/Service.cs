@@ -262,6 +262,8 @@ namespace Nokiso
 			public static async Task<JsonValue> GetUserToken()
 			{
 				CallToken.Body ["grant_type"] = "password";
+				CallToken.Body ["client_id"] = "8a1d8939-7ded-4e0c-9cb1-a27748edad62";
+				CallToken.Body ["client_secret"] = "cdf2662153b94b1cef93a7513276256908fe8992";
 				CallToken.Body ["username"] = User.Username; 
 				CallToken.Body ["password"] = User.Password;
 				
