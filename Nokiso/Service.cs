@@ -105,19 +105,19 @@ namespace Nokiso
 			{
 				Request.DefaultRequestHeaders.Accept.Add (new MediaTypeWithQualityHeaderValue (ContentType));
 
+				// get a token only if the operation isn't /oauth/token
+				// don't need a token in the headers for these operations
 				if (Operation != "/oauth/token") {
 					if (Context == "app") {
 						if (!TokenManager.AppHasToken()) {
 							await TokenService.GetAppToken ();
-						} else {
-							Headers.Add ("Authorization", "Bearer " + TokenManager.AppToken);
 						}
+						Headers["Authorization"] = "Bearer " + TokenManager.AppToken;
 					} else {
 						if (!TokenManager.UserHasToken()) {
 							await TokenService.GetUserToken ();
-						} else {
-							Headers.Add ("Authorization", "Bearer " + TokenManager.UserToken);
 						}
+						Headers["Authorization"] = "Bearer " + TokenManager.UserToken;
 					}
 				}
 

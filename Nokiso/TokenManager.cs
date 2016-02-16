@@ -2,6 +2,7 @@
 
 namespace Nokiso
 {
+	// class reachable everywhere to get if the app has a token
 	public static class TokenManager
 	{
 		public static string AppToken {
@@ -14,9 +15,23 @@ namespace Nokiso
 			set;
 		}
 
-		public static bool AppHasToken() { return AppToken == null || AppToken == String.Empty; }
+		public static bool AppHasToken() {
+			if (AppToken == null || AppToken == String.Empty) {
+				return false;
+			} else {
+				return true;
+			}
+			
+		}
 
-		public static bool UserHasToken() { return UserToken == null || UserToken == String.Empty; }
+		public static bool UserHasToken() {
+			if (UserToken == null || UserToken == String.Empty) {
+				return true;
+			} else {
+				return false;
+			}
+		
+		}
 	}
 }
 

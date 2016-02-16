@@ -15,11 +15,9 @@ namespace Nokiso
 		protected override void OnStart ()
 		{
 			// Handle when your app starts
+			// TMP : get username / password from a login form
 			User.Username = "Foo";
 			User.Password = "Bar";
-
-			TokenManager.AppToken = "";
-			TokenManager.UserToken = "";
 		}
 
 		protected override void OnSleep ()
