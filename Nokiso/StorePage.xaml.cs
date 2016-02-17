@@ -12,10 +12,6 @@ namespace Nokiso
 {
 	public partial class StorePage : ContentPage
 	{
-		private Editor pseudo;
-
-		private Editor password;
-
 		public StorePage ()
 		{
 			InitializeComponent ();
@@ -24,7 +20,7 @@ namespace Nokiso
 			GetStore ();
 		}
 			
-		/* private void UpdateUI(JsonValue data)
+		private void UpdateUI(JsonValue data)
 		{
 			int responseCode = data ["code"];
 
@@ -42,7 +38,7 @@ namespace Nokiso
 					this.Result.Text = "Check in the logs";
 				}
 			}
-		} */
+		}
 
 		private async void GetStore()
 		{
@@ -56,15 +52,15 @@ namespace Nokiso
 			} else {
 				Console.WriteLine ("Something went wrong with the request");
 			}
-			// UpdateUI (data);
+			UpdateUI (data);
 		}
 
-		private void OnClicked (object sender, EventArgs args) {
-//			if () {
-				this.Navigation.PushAsync(new StorePage());
-//			}
+		private async void OnLogoutButtonClicked (object sender, EventArgs e)
+		{
+			App.IsUserLoggedIn = false;
+			Navigation.InsertPageBefore (new SignInPage (), this);
+			await Navigation.PopAsync ();
 		}
-			
 	}
 }
 

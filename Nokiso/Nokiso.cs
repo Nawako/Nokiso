@@ -6,10 +6,16 @@ namespace Nokiso
 {
 	public class App : Application
 	{
+		public static bool IsUserLoggedIn { get; set; }
+
 		public App ()
 		{
 			// The root page of your application
-			MainPage = new NavigationPage(new StorePage());
+			if (!IsUserLoggedIn) {
+				MainPage = new NavigationPage (new SignInPage ());
+			} else {
+				MainPage = new NavigationPage (new StorePage ());
+			}
 		}
 
 		protected override void OnStart ()
