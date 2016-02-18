@@ -4,8 +4,16 @@
 		<ToolbarItem Text="Logout" Clicked="OnLogoutButtonClicked" />
 	</ContentPage.ToolbarItems>
 	<ContentPage.Content>
-		<StackLayout HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
-			<Label x:Name="Result"></Label>
-		</StackLayout>
+		<ListView x:Name="lstView">
+			<ListView.ItemTemplate>
+				<DataTemplate>
+					<!--comment and uncomment lines to see each cell type-->
+					<TextCell Text="{Binding Name}" Detail="{Binding Uid}" />
+					<!--<ImageCell Text="{Binding name}" Detail="{Binding comment}" ImageSource="{Binding image}" />-->
+					<!--<SwitchCell Text="{Binding name}" On="{Binding isReallyAVeggie}" />-->
+					<!--<EntryCell Label="{Binding name}" Text="{Binding comment}" />-->
+				</DataTemplate>
+			</ListView.ItemTemplate>
+		</ListView>
 	</ContentPage.Content>
 </ContentPage>
