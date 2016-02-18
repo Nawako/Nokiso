@@ -4,9 +4,17 @@ namespace Nokiso
 {
 	public class Category
 	{
-		public Category ()
-		{
-		}
+
+			public string Name {
+				get;
+				set;
+			}
+
+			public string Uid {
+				get;
+				set;
+
 	}
 }
 
+}
