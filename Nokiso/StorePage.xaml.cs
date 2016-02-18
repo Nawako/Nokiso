@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 
+using Newtonsoft.Json;
+
 using Xamarin.Forms;
 
 
@@ -52,6 +54,7 @@ namespace Nokiso
 			} else {
 				Console.WriteLine ("Something went wrong with the request");
 			}
+			Deserialize (data);
 			UpdateUI (data);
 		}
 
@@ -60,6 +63,38 @@ namespace Nokiso
 			App.IsUserLoggedIn = false;
 			Navigation.InsertPageBefore (new SignInPage (), this);
 			await Navigation.PopAsync ();
+		}
+
+		public List<Category> Deserialize(JsonValue datas)
+		{
+
+			CategoryJson json = new CategoryJson ();
+			Category category = new Category ();
+			List<Category> categories = new List<Category> ();
+
+			// Seriously, obligé de passer en string pour que ça deserialize. 
+			// WTF.
+			string output = datas.ToString ();
+
+			json = JsonConvert.DeserializeObject<CategoryJson>(output);
+
+			// Boucle qui parse le JSON pour en extraire les categories
+			for (int i = 0; i < json.result.Count; i++) {
+				try {
+
+					category.Name = json.result[i].name;
+					category.Uid = json.result[i].uid;
+
+					categories.Add(category);
+
+				} catch (FormatException ex) {
+					Console.WriteLine(ex.ToString ());
+				} catch (JsonException ex) {
+					Console.WriteLine(ex.ToString ());
+				}
+			}
+
+			return categories;
 		}
 	}
 }
