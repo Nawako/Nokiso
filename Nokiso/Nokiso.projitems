@@ -22,6 +22,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)SignInPage.xaml.cs">
       <DependentUpon>SignInPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)CategoryJson.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Category.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)StorePage.xaml">
