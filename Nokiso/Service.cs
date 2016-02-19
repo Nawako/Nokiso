@@ -134,7 +134,7 @@ namespace Nokiso
 				if (Method != null && Operation != null) {
 					switch (Method) {
 					case "GET":
-						Response = await Request.GetAsync (Operation);
+							Response = await Request.GetAsync (Operation + formatUrl (Body));
 						break;
 					case "POST":
 						Response = await Request.PostAsync (Operation, RequestBody);
@@ -151,6 +151,11 @@ namespace Nokiso
 					}
 				}
 	
+				// get ready for new request
+				// Body.Clear ();
+				// Console.WriteLine("Operation : {0}", Operation);
+				// Console.WriteLine("Response : {0}", Response);
+
 				if (Response != null) {
 					using (Stream ResponseStream = await Response.Content.ReadAsStreamAsync ()) {
 						JsonValue ResponseData = await Task.Run (() => JsonObject.Load (ResponseStream));
@@ -211,6 +216,19 @@ namespace Nokiso
 				error.Add ("erreur", "The request did not send back any response");
 				return error;
 			} // </Using HttpClient>
+		}
+
+		private string formatUrl(Dictionary<string, string> CallParams)
+		{
+			if (CallParams.Count == 0)
+				return "";
+			
+			List<string> listParams = new List<string>();
+			foreach (var param in CallParams) {
+				listParams.Add(param.Key + "=" + param.Value);
+			}
+
+			return "?" + string.Join("&", listParams);
 		}
 
 

@@ -48,10 +48,20 @@ namespace Nokiso
 			JsonValue data = await result;
 
 			if (!data.ContainsKey("erreur")) {
-				Console.WriteLine ("Result : {0}", data);
+				string uid = data["result"][0]["uid"];
+
+				s.Operation = "/category/list";
+				s.Body.Add ("store_uid", uid);
+				Task<JsonValue> result_category = s.CallAsync ();
+				JsonValue data_category = await result_category;
+
+				Console.WriteLine ("Result category : {0}", data_category);
+
 			} else {
 				Console.WriteLine ("Something went wrong with the request");
 			}
+
+
 			// UpdateUI (data);
 		}
 	}
