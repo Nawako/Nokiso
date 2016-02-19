@@ -39,7 +39,13 @@ namespace Nokiso
 
 			if (!data.ContainsKey("erreur")) {
 				Console.WriteLine ("Result : {0}", data);
+				Navigation.PopAsync ();
 			} else {
+				if (data.ToString().Contains("User"))
+					DisplayAlert ("Oops", "User already exist", "OK");
+				else 
+					DisplayAlert ("Oops", "Something went wrong, please try again later", "OK");
+				
 				Console.WriteLine ("Something went wrong with the request");
 			}
 		}

@@ -189,6 +189,22 @@ namespace Nokiso
 							return error;
 						}
 
+						// If error, then no need to continue
+						switch (ResponseCode) {
+						case 500:
+							error.Add ("erreur", "User may already exist.");
+							return error;
+							break;
+						case 404:
+							error.Add ("erreur", "No resource.");
+							return error;
+							break;
+						case 401:
+							error.Add ("erreur", "Something went wrong.");
+							return error;
+							break;
+						}
+
 						if (ResponseCode != 0) {
 							JsonValue RefreshedTokenData;
 							if (Context == "app") {
