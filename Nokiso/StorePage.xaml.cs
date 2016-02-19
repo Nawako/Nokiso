@@ -15,6 +15,9 @@ namespace Nokiso
 {
 	public partial class StorePage : ContentPage
 	{
+		static int PRODUCT = 1;
+		static int CATEGORY = 0;
+		
 		public StorePage ()
 		{
 			InitializeComponent ();
@@ -48,6 +51,7 @@ namespace Nokiso
 					lstView.ItemTemplate = new DataTemplate (typeof(TextCell));
 					lstView.ItemTemplate.SetBinding (TextCell.TextProperty, "Name");
 					lstView.ItemTemplate.SetBinding (TextCell.DetailProperty, "Uid");
+					lstView.ItemTapped += OnTap;
 					#endregion
 
 					//Observable Collection ! La ListView se met à jour en temps réel dès qu'on ajoute un objet.
@@ -58,6 +62,34 @@ namespace Nokiso
 					}
 				}
 			}
+		}
+
+		// Gestion du tap sur la ListView
+		void OnTap (object sender, ItemTappedEventArgs e)
+		{
+			Category category = (Category) e.Item;
+			GetProducts (category.Uid);
+		}
+
+		// Obtient les produits avec l'uid de la catégorie
+		private async void GetProducts(string uid)
+		{
+			Dictionary<string, string> test = new Dictionary<string, string> ();
+			test.Add ("category_uid", uid);
+
+			Service s = new Service ("/product/list?category_uid=" + uid, "user");
+
+			Task<JsonValue> result = s.CallAsync();
+
+			JsonValue data = await result;
+
+			if (!data.ContainsKey("erreur")) {
+				Console.WriteLine ("Result : {0}", data);
+			} else {
+				Console.WriteLine ("Something went wrong with the request");
+			}
+
+			UpdateUI (data, DeserializeProduct (data));
 		}
 
 		private async void GetStore()
@@ -73,7 +105,7 @@ namespace Nokiso
 				Console.WriteLine ("Something went wrong with the request");
 			}
 
-			UpdateUI (data, Deserialize (data));
+			UpdateUI (data, DeserializeCategory (data));
 		}
 
 		private async void OnLogoutButtonClicked (object sender, EventArgs e)
@@ -82,8 +114,38 @@ namespace Nokiso
 			Navigation.InsertPageBefore (new SignInPage (), this);
 			await Navigation.PopAsync ();
 		}
+			
+		public List<Category> DeserializeCategory(JsonValue datas)
+		{
+			
+			CategoryJson json = new CategoryJson ();
+			List<Category> categories = new List<Category> ();
 
-		public List<Category> Deserialize(JsonValue datas)
+			// Seriously, obligé de passer en string pour que ça deserialize. 
+			// WTF.
+			string output = datas.ToString ();
+
+			json = JsonConvert.DeserializeObject<CategoryJson>(output);
+
+			// Boucle qui parse le JSON pour en extraire les categories
+			for (int i = 0; i < json.result.Count; i++) {
+				try {
+					Category category = new Category ();
+					category.Name = json.result[i].name;
+					category.Uid = json.result[i].uid;
+
+					categories.Add(category);
+
+				} catch (FormatException ex) {
+					Console.WriteLine(ex.ToString ());
+				} catch (JsonException ex) {
+					Console.WriteLine(ex.ToString ());
+				}			
+			}
+			return categories;
+		}
+
+		public List<Category> DeserializeProduct(JsonValue datas)
 		{
 
 			CategoryJson json = new CategoryJson ();
