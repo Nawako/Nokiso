@@ -1,5 +1,24 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Nokiso.SignUpPage">
 	<ContentPage.Content>
+		<StackLayout HorizontalOptions="CenterAndExpand">
+			<Entry 	Placeholder="Enter your firstname :"
+					Text=""
+					x:Name="firstNameEntry" />
+			<Entry 	Placeholder="Enter your lastname :"
+					Text=""
+					x:Name="lastNameEntry"/>
+			<Entry 	Placeholder="Enter your email :"
+					Text=""
+					x:Name="mailEntry"/>
+			<Entry 	Placeholder="Enter your password :"
+					Text=""
+					x:Name="passwordEntry"
+					IsPassword="true" />
+			<Button Text="Register"
+					BackgroundColor="Blue"
+					TextColor="White"
+					Clicked="OnRegisterButtonClicked"></Button>
+		</StackLayout>
 	</ContentPage.Content>
 </ContentPage>

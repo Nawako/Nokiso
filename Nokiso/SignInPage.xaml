@@ -6,16 +6,19 @@
 					HeightRequest="300"
 					WidthRequest="300"/>
 			<Entry 	Placeholder="Username"
+					Text="Yannick"
 					x:Name="usernameEntry" />
 			<Entry 	Placeholder="Password"
+					Text="Jussy971"
 					x:Name="passwordEntry"
 					IsPassword="true" />
 			<Button Text="Sign In"
 					Clicked="OnSignInButtonClicked"
 					BackgroundColor="Blue"
 					TextColor="White"></Button>
-			<Button Text="Forgot your password ?"
+			<Button Text="Register"
 					Clicked="OnSignUpButtonClicked"></Button>
+
 			<Label x:Name="messageLabel" />
 	</StackLayout>
 	</ContentPage.Content>
