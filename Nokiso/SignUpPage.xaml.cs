@@ -31,7 +31,8 @@ namespace Nokiso
 			body.Add ("firstname", firstNameEntry.Text);
 			body.Add ("lastname", lastNameEntry.Text);
 			body.Add ("password", passwordEntry.Text);
-			Service s = new Service ("/auth/subscribe", body, "app");
+			
+			Service s = new Service ("/auth/subscribe", "POST", body, "app");
 			Task<JsonValue> result = s.CallAsync();
 
 			JsonValue data = await result;
