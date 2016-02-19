@@ -26,9 +26,9 @@ namespace Nokiso
 
 		public static bool UserHasToken() {
 			if (UserToken == null || UserToken == String.Empty) {
-				return true;
-			} else {
 				return false;
+			} else {
+				return true;
 			}
 		
 		}

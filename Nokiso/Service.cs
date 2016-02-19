@@ -163,6 +163,7 @@ namespace Nokiso
 								return ResponseData;
 							} else {
 								error.Add ("erreur", "Something went wrong while retrieving a token.");
+								return error;
 							}
 						}
 
@@ -277,6 +278,27 @@ namespace Nokiso
 				TokenManager.UserToken = Data ["access_token"];
 				return Data;
 			}
+
+			public static async Task<JsonValue> GetUserTokenParam(string username, string password)
+			{
+				CallToken.Body ["grant_type"] = "password";
+				CallToken.Body ["client_id"] = "8a1d8939-7ded-4e0c-9cb1-a27748edad62";
+				CallToken.Body ["client_secret"] = "cdf2662153b94b1cef93a7513276256908fe8992";
+				CallToken.Body ["username"] = username;
+				CallToken.Body ["password"] = password;
+
+				Task<JsonValue> Result = CallToken.CallAsync ();
+				JsonValue Data = await Result;
+
+				if (Data.ContainsKey("refresh_token")) {
+					RefreshUserTokenP = Data ["refresh_token"];
+					Console.WriteLine (RefreshUserTokenP);
+				}
+
+				TokenManager.UserToken = Data ["access_token"];
+				return Data;
+			}
+
 
 			public static async Task<JsonValue> RefreshUserToken()
 			{

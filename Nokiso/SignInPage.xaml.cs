@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 
 using Xamarin.Forms;
+using System.Json;
+using System.Threading.Tasks;
 
 namespace Nokiso
 {
@@ -14,11 +16,13 @@ namespace Nokiso
 		}
 
 		private async void OnSignInButtonClicked (object sender, EventArgs args) {
-			User.Username = usernameEntry.Text;
-			User.Password = passwordEntry.Text;
 
-			var isValid = AreCredentialsCorrect ();
-			if (isValid) {
+			Task<JsonValue> taskToken = Service.TokenService.GetUserTokenParam(usernameEntry.Text, passwordEntry.Text);
+			JsonValue resultAppToken = await taskToken;
+			Console.WriteLine ("Foobar : {0}", resultAppToken);
+			Console.WriteLine (TokenManager.UserToken);
+
+			if (TokenManager.UserToken != string.Empty) {
 				App.IsUserLoggedIn = true;
 				Navigation.InsertPageBefore (new StorePage (), this);
 				await Navigation.PopAsync ();
@@ -30,11 +34,6 @@ namespace Nokiso
 
 		async void OnSignUpButtonClicked (object sender, EventArgs args) {
 			await Navigation.PushAsync (new SignUpPage ());
-		}
-
-		bool AreCredentialsCorrect ()
-		{
-			return User.Username == "Yannick" && User.Password == "Jussy971";
 		}
 	}
 }
