@@ -81,6 +81,9 @@ namespace Nokiso
 		public Service (string operation, Dictionary<string, string> body, string context) : this()
 		{
 			Operation = operation;
+			// For testing purpose
+			// Tu verras que plus tard dans CallAsync ce sera POST 
+			Method = "GET";
 			Context = context;
 			Body = body;
 		}

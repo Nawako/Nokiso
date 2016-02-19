@@ -15,8 +15,8 @@ namespace Nokiso
 {
 	public partial class StorePage : ContentPage
 	{
-		static int PRODUCT = 1;
-		static int CATEGORY = 0;
+//		static int PRODUCT = 1;
+//		static int CATEGORY = 0;
 		
 		public StorePage ()
 		{
@@ -113,7 +113,6 @@ namespace Nokiso
 				Console.WriteLine ("Something went wrong with the request");
 			}
 
-<<<<<<< HEAD
 			UpdateUI (data, DeserializeCategory (data));
 		}
 
@@ -182,10 +181,8 @@ namespace Nokiso
 				}			
 			}
 			return categories;
-=======
 
 			// UpdateUI (data);
->>>>>>> ff8e38fe4d85b5baa805568dea8197b8c9c5ef70
 		}
 	}
 }
