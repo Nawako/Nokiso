@@ -164,6 +164,10 @@ namespace Nokiso
 				// Body.Clear ();
 				// Console.WriteLine("Operation : {0}", Operation);
 				// Console.WriteLine("Response : {0}", Response);
+				if (Response.StatusCode.ToString() == "BadRequest") {
+					error.Add("erreur", "Authentification failure.");
+					return error;
+				}
 
 				if (Response != null) {
 					using (Stream ResponseStream = await Response.Content.ReadAsStreamAsync ()) {
@@ -202,6 +206,9 @@ namespace Nokiso
 						case 401:
 							error.Add ("erreur", "Something went wrong.");
 							return error;
+							break;
+						case 400:
+							error.Add("erreur", "Authentification failure.");
 							break;
 						}
 
@@ -336,6 +343,9 @@ namespace Nokiso
 				if (Data.ContainsKey("refresh_token")) {
 					RefreshUserTokenP = Data ["refresh_token"];
 					Console.WriteLine (RefreshUserTokenP);
+				} else if (Data.ContainsKey("erreur")) {
+					Console.WriteLine (Data.ToString());
+					return null;
 				}
 
 				TokenManager.UserToken = Data ["access_token"];

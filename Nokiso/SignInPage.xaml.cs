@@ -22,13 +22,18 @@ namespace Nokiso
 			Console.WriteLine ("Foobar : {0}", resultAppToken);
 			Console.WriteLine (TokenManager.UserToken);
 
-			if (TokenManager.UserToken != string.Empty) {
-				App.IsUserLoggedIn = true;
-				Navigation.InsertPageBefore (new StorePage (), this);
-				await Navigation.PopAsync ();
-			} else {
+			if (resultAppToken == null) {
+				DisplayAlert ("Login failure", "Did you entered the right login ? Password ?", "I'll see");
 				messageLabel.Text = "Login failed";
 				passwordEntry.Text = string.Empty;
+			} else {
+
+				if (TokenManager.UserToken != string.Empty) {
+					App.IsUserLoggedIn = true;
+					Navigation.InsertPageBefore (new StorePage (), this);
+					await Navigation.PopAsync ();
+				}
+
 			}
 		}
 
