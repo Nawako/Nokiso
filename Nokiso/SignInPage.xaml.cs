@@ -17,10 +17,11 @@ namespace Nokiso
 
 		private async void OnSignInButtonClicked (object sender, EventArgs args) {
 
-			Task<JsonValue> taskToken = Service.TokenService.GetUserTokenParam(usernameEntry.Text, passwordEntry.Text);
+			User.Username = this.usernameEntry.Text;
+			User.Password = this.passwordEntry.Text;
+
+			Task<JsonValue> taskToken = Service.TokenService.GetUserToken();
 			JsonValue resultAppToken = await taskToken;
-			Console.WriteLine ("Foobar : {0}", resultAppToken);
-			Console.WriteLine (TokenManager.UserToken);
 
 			if (TokenManager.UserToken != string.Empty) {
 				App.IsUserLoggedIn = true;
