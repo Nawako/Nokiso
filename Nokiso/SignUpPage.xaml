@@ -3,16 +3,12 @@
 	<ContentPage.Content>
 		<StackLayout HorizontalOptions="CenterAndExpand">
 			<Entry 	Placeholder="Enter your firstname :"
-					Text="Fabrice"
 					x:Name="firstNameEntry" />
 			<Entry 	Placeholder="Enter your lastname :"
-					Text="KISTNER"
 					x:Name="lastNameEntry"/>
 			<Entry 	Placeholder="Enter your email :"
-					Text="fab@test.fr"
 					x:Name="mailEntry"/>
 			<Entry 	Placeholder="Enter your password :"
-					Text="azerty"
 					x:Name="passwordEntry"
 					IsPassword="true" />
 			<Button Text="Register"

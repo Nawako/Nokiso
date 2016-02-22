@@ -16,7 +16,7 @@ namespace Nokiso
 		public CategoryPage (string storeuid)
 		{
 			InitializeComponent ();
-			this.Title = "Store page";
+			this.Title = "Category";
 			mStoreUid = storeuid;
 			GetCategories ();
 		}
@@ -28,12 +28,12 @@ namespace Nokiso
 			if (data != null) {
 				if (responseCode != 0) {
 					if (responseCode != 401) {
-						Console.WriteLine ("Something went wrong with the request");
+						//Console.WriteLine ("Something went wrong with the request");
 					} else {
-						Console.WriteLine ("Invalid token or refresh token");
+						//Console.WriteLine ("Invalid token or refresh token");
 					}
 				} else {
-					Console.WriteLine ("Result : {0}", data);
+					//Console.WriteLine ("Result : {0}", data);
 
 					// Ca marche !
 
@@ -77,10 +77,10 @@ namespace Nokiso
 			JsonValue data = await result;
 
 			if (!data.ContainsKey("erreur")) {
-				Console.WriteLine ("Result category : {0}", data.ToString());
+				//Console.WriteLine ("Result category : {0}", data.ToString());
 
 			} else {
-				Console.WriteLine ("Something went wrong with the request");
+				//Console.WriteLine ("Something went wrong with the request");
 			}
 
 			UpdateUI (data, DeserializeCategory (data));
@@ -105,6 +105,11 @@ namespace Nokiso
 
 			json = JsonConvert.DeserializeObject<CategoryJson>(output);
 
+			// Alert si aucun produit
+			if (json.result.Count == 0) {
+				DisplayAlert ("No items", "Oops, it seems that no items are available in this page.", "Ok");
+			}
+
 			// Boucle qui parse le JSON pour en extraire les categories
 			for (int i = 0; i < json.result.Count; i++) {
 				try {
@@ -115,9 +120,9 @@ namespace Nokiso
 					categories.Add(category);
 
 				} catch (FormatException ex) {
-					Console.WriteLine(ex.ToString ());
+					//Console.WriteLine(ex.ToString ());
 				} catch (JsonException ex) {
-					Console.WriteLine(ex.ToString ());
+					//Console.WriteLine(ex.ToString ());
 				}			
 			}
 			return categories;

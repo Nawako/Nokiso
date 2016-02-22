@@ -17,14 +17,15 @@ namespace Nokiso
 
 		private async void OnSignInButtonClicked (object sender, EventArgs args) {
 
-			Task<JsonValue> taskToken = Service.TokenService.GetUserTokenParam(usernameEntry.Text, passwordEntry.Text);
+			// Affects the user with these credits
+			User.Username = this.usernameEntry.Text;
+			User.Password = this.passwordEntry.Text;
+
+			Task<JsonValue> taskToken = Service.TokenService.GetUserToken();
 			JsonValue resultAppToken = await taskToken;
-			Console.WriteLine ("Foobar : {0}", resultAppToken);
-			Console.WriteLine (TokenManager.UserToken);
 
 			if (resultAppToken == null) {
 				DisplayAlert ("Login failure", "Did you entered the right login ? Password ?", "I'll see");
-				messageLabel.Text = "Login failed";
 				passwordEntry.Text = string.Empty;
 			} else {
 
