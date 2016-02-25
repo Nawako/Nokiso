@@ -139,11 +139,28 @@ namespace Nokiso
 				Request.BaseAddress = new Uri (SERVER_URL);
 				HttpContent RequestBody = new FormUrlEncodedContent (Body);
 
+				bool isServerReachable;
+
+				try {
+					using (var client = new WebClient()) {
+						using (var stream = client.OpenRead("http://xmazon.appspaces.fr/")) {
+							isServerReachable = true;
+						}
+					}
+				} catch {
+					isServerReachable = false;
+				}
+
+				if (!isServerReachable) {
+					error.Add ("erreur", "Check your internet connection.");
+					return error;
+				}
+
 				HttpResponseMessage Response = null;
 				if (Method != null && Operation != null) {
 					switch (Method) {
 					case "GET":
-							Response = await Request.GetAsync (Operation + formatUrl (Body));
+						Response = await Request.GetAsync (Operation + formatUrl (Body));
 						break;
 					case "POST":
 						Response = await Request.PostAsync (Operation, RequestBody);
@@ -286,8 +303,17 @@ namespace Nokiso
 				Task<JsonValue> Result = CallToken.CallAsync ();
 				JsonValue Data = await Result;
 
+				if (Data.Count == 0) {
+					Data["erreur"] = "Could not retrieve the app token.";
+					return Data;
+				}
+
 				if (Data.ContainsKey("refresh_token")) {
 					RefreshAppTokenP = Data ["refresh_token"];	
+				} else if (Data.ContainsKey ("erreur")) {
+					return Data;
+				} else if (Data.Count == 0) {
+					Data ["erreur"] = "Could not retrieve app token.";
 				}
 
 				TokenManager.AppToken = Data ["access_token"];
@@ -304,6 +330,10 @@ namespace Nokiso
 
 				if (Data.ContainsKey("refresh_token")) {
 					RefreshAppTokenP = Data ["refresh_token"];
+				} else if (Data.ContainsKey ("erreur")) {
+					return Data;
+				} else if (Data.Count == 0) {
+					Data ["erreur"] = "Could not refresh app token.";
 				}
 					
 				TokenManager.AppToken = Data ["access_token"];
@@ -321,13 +351,14 @@ namespace Nokiso
 				Task<JsonValue> Result = CallToken.CallAsync ();
 				JsonValue Data = await Result;
 
-				if (Data.ContainsKey("refresh_token")) {
+				if (Data.ContainsKey ("refresh_token")) {
 					RefreshUserTokenP = Data ["refresh_token"];
-				} else if (Data.ContainsKey("erreur")) {
-				return null;
-			}
-
-
+				} else if (Data.ContainsKey ("erreur")) {
+					return Data;
+				} else if (Data.Count == 0) {
+					Data ["erreur"] = "Could not retrieve user token.";
+				}
+					
 				TokenManager.UserToken = Data ["access_token"];
 				return Data;
 			}
@@ -342,6 +373,10 @@ namespace Nokiso
 
 				if (Data.ContainsKey("refresh_token")) {
 					RefreshUserTokenP = Data ["refresh_token"];
+				} else if (Data.ContainsKey ("erreur")) {
+					return Data;
+				} else if (Data.Count == 0) {
+					Data ["erreur"] = "Could not refresh user token.";
 				}
 
 				TokenManager.UserToken = Data ["access_token"];

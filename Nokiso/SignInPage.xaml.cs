@@ -24,7 +24,10 @@ namespace Nokiso
 			Task<JsonValue> taskToken = Service.TokenService.GetUserToken();
 			JsonValue resultAppToken = await taskToken;
 
-			if (resultAppToken == null) {
+
+			if (resultAppToken.ContainsKey ("erreur")) {
+				DisplayAlert ("Erreur", resultAppToken ["erreur"], "OK");
+			} else if (resultAppToken == null) {
 				DisplayAlert ("Login failure", "Did you entered the right login ? Password ?", "I'll see");
 				passwordEntry.Text = string.Empty;
 			} else {

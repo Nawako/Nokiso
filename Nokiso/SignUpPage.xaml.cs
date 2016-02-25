@@ -5,7 +5,6 @@ using Xamarin.Forms;
 using System.Json;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
-using Acr.UserDialogs;
 
 namespace Nokiso
 {

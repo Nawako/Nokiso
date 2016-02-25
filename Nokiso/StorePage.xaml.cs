@@ -70,6 +70,9 @@ namespace Nokiso
 	//		GetProducts (category.Uid);
 		}
 
+		void Foo(object sender) {
+		}
+
 		private async void GetStore()
 		{
 			Service s = new Service ("/store/list", "app");

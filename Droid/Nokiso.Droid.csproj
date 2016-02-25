@@ -89,6 +89,7 @@
     <None Include="Assets\AboutAssets.txt" />
     <None Include="packages.config" />
     <None Include="Resources\onepiecechopper.jpg" />
+    <None Include="Resources\searcher.png" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\layout\" />
