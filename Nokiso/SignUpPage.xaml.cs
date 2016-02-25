@@ -39,18 +39,16 @@ namespace Nokiso
 			JsonValue data = await result;
 
 			if (!data.ContainsKey("erreur")) {
-				//Console.WriteLine ("Result : {0}", data);
-				await DisplayAlert ("New user", "Your account has been successfully activated", "OK");
+				await DisplayAlert ("New user", "Your account have successfully been activated", "OK");
 				Registered ();
-				//DisplayAlert ("New user", "Your account has been successfully activated", "OK");
-				//Navigation.PopAsync ();
 			} else {
-				if (data.ToString().Contains("User"))
+				if (data.ToString ().Contains ("User")) {
 					DisplayAlert ("Oops", "User already exist", "OK");
-				else 
+				} else if (data.ContainsKey ("erreur")) {
+					DisplayAlert ("Erreur", data ["erreur"], "OK");
+				} else { 
 					DisplayAlert ("Oops", "Something went wrong, please try again later", "OK");
-				
-				//Console.WriteLine ("Something went wrong with the request");
+				}
 			}
 		}
 
@@ -61,18 +59,30 @@ namespace Nokiso
 		bool AreCredentialsCorrect ()
 		{
 			bool credits = false;
-			if (mailEntry.Text.Length > 4 &&
-				passwordEntry.Text.Length >= 6
-				&& isLetters(firstNameEntry.Text)
-				&& isLetters(lastNameEntry.Text))
-				credits = true;
-			else
-				DisplayAlert ("Login / Password invalid", "Username should be superior to 4 characters, password should be superior to 6 characters, firstname and lastname should have only letters", "OK");
+
+
+			if (mailEntry.Text != null && mailEntry.Text != String.Empty &&
+				passwordEntry.Text != null && passwordEntry.Text != String.Empty &&
+				firstNameEntry.Text != null && firstNameEntry.Text != String.Empty &&
+				lastNameEntry.Text != null && lastNameEntry.Text != String.Empty) {
+
+				if (mailEntry.Text.Length > 4 &&
+				    passwordEntry.Text.Length >= 6 &&
+				    isLetters (firstNameEntry.Text) &&
+				    isLetters (lastNameEntry.Text)) {
+					credits = true;
+				} else {
+					DisplayAlert ("Login / Password invalid", "Username should be superior to 4 characters, password should be superior to 6 characters, firstname and lastname should have only letters.", "OK");
+			
+				}
+			} else {
+				DisplayAlert ("One of the fields are empty", "Please fill up all fields.", "OK");
+			}
 
 			return credits;
 		}
 
-		// Vérifie que c'est que des lettres
+		// check string is only composed of letters
 		bool isLetters (string parse) {
 			return Regex.IsMatch(parse, @"^[a-zA-Z]+$");
 		}
